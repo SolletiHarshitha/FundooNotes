@@ -1,44 +1,71 @@
-﻿using Experimental.System.Messaging;
-using Models;
-using Repository.Context;
-using Repository.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Text;
+// ----------------------------------------------------------------------------------------------------------
+// <copyright file="UserRepository.cs" company="Bridgelabz"> 
+// Copyright © 2021 Company="BridgeLabz" 
+// </copyright> 
+// <creator name="Harshitha Solleti"/> 
+// ----------------------------------------------------------------------------------------------------------
 
 namespace Repository.Repository
 {
+    using System;
+    using System.Linq;
+    using System.Net.Mail;
+    using System.Text;
+    using Experimental.System.Messaging;
+    using Models;
+    using global::Repository.Context;
+    using global::Repository.Interface;
+    
+    /// <summary>
+    /// User Repository Class
+    /// </summary>
     public class UserRepository : IUserRepository
     {
+        /// <summary>
+        /// Object for UserContext
+        /// </summary>
         private readonly UserContext userContext;
 
+        /// <summary>
+        /// Initializes a new instance of the UserRepository class
+        /// </summary>
+        /// <param name="userContext"> UserContext userContext</param>
         public UserRepository(UserContext userContext)
         {
             this.userContext = userContext;
         }
 
+        /// <summary>
+        /// Method for Register
+        /// </summary>
+        /// <param name="userData">Details required for Registration</param>
+        /// <returns>Result of the action</returns>
         public bool Register(RegisterModel userData)
         {
             try
             {
                 if (userData != null)
                 {
-                    userData.Password = EncryptPassword(userData.Password);
+                    userData.Password = this.EncryptPassword(userData.Password);
                     this.userContext.Users.Add(userData);
                     this.userContext.SaveChanges();
                     return true;
                 }
+
                 return false;
             }
-            catch(ArgumentNullException ex)
+            catch (ArgumentNullException ex)
             {
                 throw new Exception(ex.Message);
             }
         }
 
-        public static string EncryptPassword(string password)
+        /// <summary>
+        /// Method to encrypt the password
+        /// </summary>
+        /// <param name="password">Password to encrypt</param>
+        /// <returns>Resultant string</returns>
+        public string EncryptPassword(string password)
         {
             try
             {
@@ -47,29 +74,43 @@ namespace Repository.Repository
                 string encodedPassword = Convert.ToBase64String(passwordEncrypt);
                 return encodedPassword;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
 
+        /// <summary>
+        /// Method For Login
+        /// </summary>
+        /// <param name="loginData">Details required for Login</param>
+        /// <returns>Result of the action</returns>
         public bool Login(LoginModel loginData)
         {
             try
             {
-                string encodedPassword = EncryptPassword(loginData.Password);
+                string encodedPassword = this.EncryptPassword(loginData.Password);
                 var login = this.userContext.Users.Where(x => x.Email == loginData.Email && x.Password == encodedPassword).FirstOrDefault();
                 if (login != null)
+                {
                     return true;
+                }
                 else
+                {
                     return false;
+                }
             }
-            catch(ArgumentNullException ex)
+            catch (ArgumentNullException ex)
             {
                 throw new Exception(ex.Message);
             }
         }
 
+        /// <summary>
+        /// Method for Forgot Password
+        /// </summary>
+        /// <param name="email">Required Email</param>
+        /// <returns>Result of the action</returns>
         public bool ForgotPassword(string email)
         {
             try
@@ -92,7 +133,10 @@ namespace Repository.Repository
                 throw new Exception(ex.Message);
             }
         }
-
+        
+        /// <summary>
+        /// Method to Send Message into Queue
+        /// </summary>
         public void SendQueue()
         {
             MessageQueue sender = new MessageQueue();
@@ -112,6 +156,10 @@ namespace Repository.Repository
             sender.Send(message);
         }
 
+        /// <summary>
+        /// Method for Receiving message
+        /// </summary>
+        /// <returns>Resultant string</returns>
         public string ReceiveQueue()
         {
             MessageQueue receiver = new MessageQueue(@".\Private$\myqueue");
@@ -120,7 +168,13 @@ namespace Repository.Repository
             string link = receive.Body.ToString();
             return link;
         }
-
+        
+        /// <summary>
+        /// Mail Method to send email
+        /// </summary>
+        /// <param name="email">Email to send</param>
+        /// <param name="message">Message from the receive queue</param>
+        /// <returns>Resultant value</returns>
         public bool Mail(string email, string message)
         {
             MailMessage mailMessage = new MailMessage();
@@ -140,11 +194,16 @@ namespace Repository.Repository
             return true;
         }
 
+        /// <summary>
+        /// Method for Reset Password
+        /// </summary>
+        /// <param name="resetData">Details required for Reset Password</param>
+        /// <returns>Result of the action</returns>
         public bool ResetPassword(ResetPasswordModel resetData)
         {
             try
             {
-                string encodedPassword = EncryptPassword(resetData.NewPassword);
+                string encodedPassword = this.EncryptPassword(resetData.NewPassword);
                 var user = this.userContext.Users.Where(x => x.Email == resetData.Email).FirstOrDefault();
                 if (user != null)
                 {

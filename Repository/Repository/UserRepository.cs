@@ -75,35 +75,24 @@ namespace Repository.Repository
             try
             {
                 var user = this.userContext.Users.Where(x => x.Email == email).FirstOrDefault();
-                if(user != null)
+                if (user != null)
                 {
                     SendQueue();
-                    var messageBody = ReceiveQueue();
-                    MailMessage mailMessage = new MailMessage();
-                    mailMessage.From = new MailAddress("soll17311.cs@rmkec.ac.in");
-                    mailMessage.To.Add(new MailAddress(email));
-                    mailMessage.Subject = "Link to reset password";
-                    mailMessage.Body = messageBody;
-                    mailMessage.IsBodyHtml = true;
-
-                    SmtpClient smtp = new SmtpClient("smtp.gmail.com");
-                    smtp.Port = 587;
-                    smtp.EnableSsl = true;
-                    smtp.UseDefaultCredentials = false;
-                    smtp.Credentials = new System.Net.NetworkCredential("soll17311.cs@rmkec.ac.in", "Password");
-
-                    smtp.Send(mailMessage);
-                    return true;
+                    var message = ReceiveQueue();
+                    if (this.Mail(email, message))
+                    {
+                        return true;
+                    }
                 }
                 return false;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
 
-        public static void SendQueue()
+        public void SendQueue()
         {
             MessageQueue sender = new MessageQueue();
             if (MessageQueue.Exists(@".\Private$\myqueue"))
@@ -116,17 +105,37 @@ namespace Repository.Repository
             }
             Message message = new Message();
             message.Formatter = new BinaryMessageFormatter();
-            message.Body = "Click on the following  link to reset your password for FundooNotes App";
+            message.Body = "Click on the following  link to reset your password for FundooNotes App ";
             sender.Label = "url link";
             sender.Send(message);
         }
-        public static string ReceiveQueue()
+
+        public string ReceiveQueue()
         {
             MessageQueue receiver = new MessageQueue(@".\Private$\myqueue");
             var receive = receiver.Receive();
             receive.Formatter = new BinaryMessageFormatter();
-            string linkToSend = receive.Body.ToString();
-            return linkToSend;
+            string link = receive.Body.ToString();
+            return link;
+        }
+
+        public bool Mail(string email, string message)
+        {
+            MailMessage mailMessage = new MailMessage();
+            mailMessage.From = new MailAddress("soll17311.cs@rmkec.ac.in");
+            mailMessage.To.Add(new MailAddress(email));
+            mailMessage.Subject = "Link to reset password";
+            mailMessage.Body = message;
+            mailMessage.IsBodyHtml = true;
+
+            SmtpClient smtp = new SmtpClient("smtp.gmail.com");
+            smtp.Port = 587;
+            smtp.EnableSsl = true;
+            smtp.UseDefaultCredentials = false;
+            smtp.Credentials = new System.Net.NetworkCredential("soll17311.cs@rmkec.ac.in", "password");
+
+            smtp.Send(mailMessage);
+            return true;
         }
     }
 }

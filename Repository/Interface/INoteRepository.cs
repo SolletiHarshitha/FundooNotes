@@ -15,10 +15,17 @@ namespace Repository.Interface
     public interface INoteRepository
     {
         /// <summary>
-        /// AddNote Method
+        /// AddNote Interface
         /// </summary>
         /// <param name="noteData">Note details to add</param>
         /// <returns>Result of the action</returns>
         string AddNote(NotesModel noteData);
+
+        /// <summary>
+        /// Update Note Interface
+        /// </summary>
+        /// <param name="noteData">To Update Note</param>
+        /// <returns>Result of the action</returns>
+        string UpdateNote(NotesModel noteData);
     }
 }

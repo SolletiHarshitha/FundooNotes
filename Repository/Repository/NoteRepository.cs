@@ -11,6 +11,7 @@ namespace Repository.Repository
     using Models;
     using global::Repository.Context;
     using global::Repository.Interface;
+    using System.Linq;
 
     /// <summary>
     /// Note Repository class
@@ -43,6 +44,31 @@ namespace Repository.Repository
                 this.userContext.Notes.Add(noteData);
                 this.userContext.SaveChanges();
                 return "Added Successfully";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Method to update a note
+        /// </summary>
+        /// <param name="noteData">Update note</param>
+        /// <returns>Returns the update status</returns>
+        public string UpdateNote(NotesModel noteData)
+        {
+            try
+            {
+                var note = this.userContext.Notes.Where(x => x.NoteId == x.NoteId && x.UserId == noteData.UserId && x.Title == noteData.Title).FirstOrDefault();
+                if (note != null)
+                {
+                    note = noteData;
+                    this.userContext.Notes.Update(note);
+                    this.userContext.SaveChanges();
+                    return "Updated Successfully";
+                }
+                return "Not Updated";
             }
             catch (Exception ex)
             {

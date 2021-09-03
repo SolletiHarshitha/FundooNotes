@@ -7,6 +7,7 @@
 
 namespace Repository.Interface
 {
+    using System.Collections.Generic;
     using Models;
 
     /// <summary>
@@ -99,5 +100,19 @@ namespace Repository.Interface
         /// <param name="noteId">Note Id Parameter</param>
         /// <returns>Result of the action</returns>
         string DeleteReminder(int noteId);
+
+        /// <summary>
+        /// Empty Trash Interface
+        /// </summary>
+        /// <param name="userId">UserId Parameter</param>
+        /// <returns>Result of the action</returns>
+        bool EmptyTrash(int userId);
+
+        /// <summary>
+        /// Get Trash Notes Interface
+        /// </summary>
+        /// <param name="userId">UserId Parameter</param>
+        /// <returns>Result of the action</returns>
+        public List<NotesModel> GetTrashNotes(int userId);
     }
 }
